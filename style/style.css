@@ -1,0 +1,81 @@
+body, html {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 0.625em;
+  font-family: "Roboto", sans-serif;
+}
+
+.context-menu {
+  display: table;
+  box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+  padding: 1rem 0;
+  position: absolute;
+  display: none;
+  background-color: white;
+  z-index: 1000;
+}
+.context-menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+.context-menu ul li {
+  font-size: 1.3rem;
+  padding: 0.6rem 2rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+.context-menu ul li:hover {
+  background-color: #f0f0f0;
+}
+
+.container {
+  width: 110rem;
+  margin: 0 auto;
+}
+.container header h1 {
+  font-size: 10rem;
+  font-weight: normal;
+  padding-top: 1.5rem;
+  margin: 0;
+}
+.container header nav ul {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+}
+.container header nav ul li {
+  padding: 0;
+  font-size: 1.5rem;
+  border: 0.1rem solid black;
+  padding: 1.2rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: 0.1s linear all;
+}
+.container header nav ul li:hover {
+  color: white;
+  background-color: black;
+}
+
+main {
+  display: block;
+  width: 100%;
+}
+
+.display {
+  width: 100%;
+  height: 45rem;
+  box-sizing: border-box;
+  border: 0.1rem solid black;
+  cursor: crosshair;
+}
+
+footer {
+  font-size: 1.3rem;
+  padding: 2rem 0;
+}
+
+/*# sourceMappingURL=style.css.map */
