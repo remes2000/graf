@@ -6,6 +6,9 @@ display.addEventListener('contextmenu', e => {
     drawContextMenu(e.pageX,e.pageY,[contextMenuItem('Create new node', (w) => drawNode(e.offsetX, e.offsetY))]);
 });
 
+document.querySelector('#BFS').addEventListener('click', () => changeMode("BFS"));
+document.querySelector('#DIJKSTRA').addEventListener('click', () => changeMode("DIJKSTRA"));
+document.querySelector('#BELLMAN-FORD').addEventListener('click', () => changeMode("BELLMAN-FORD"));
 
 //global variables
 const width = display.offsetWidth;
@@ -15,6 +18,11 @@ const nodes = [];
 let nodeIdCounter = 0;
 let lineIdCounter = 0;
 let currentLine = null;
+let previousLine = null; 
+
+//mode
+let mode = '';
+changeMode("BFS");
 
 const stage = new Konva.Stage({
     container: 'display',
@@ -75,8 +83,29 @@ function drawNode(x, y){
         display.style.cursor = 'crosshair';
     });
 
+    nodeGroup.on('dragstart', e => {
+        if(!!currentLine && currentLine.attrs.startNodeId === nodeGroup.attrs.id){
+            currentLine.destroy();
+            previousLine = currentLine;
+            currentLine = null;
+            layer.draw();
+        }
+    });
+
+    nodeGroup.on('dragend', e => {
+        if(!!previousLine && previousLine.attrs.startNodeId === nodeGroup.attrs.id){
+            createEdge(e.currentTarget);
+            previousLine = false;
+        }
+    });
+
     nodeGroup.on('dragmove', e => {
-        const virtualNode = nodes.find(n => n.konvaId === nodeGroup._id);
+        const virtualNode = nodes.find(n => n.id === nodeGroup.attrs.id);
+
+        if(!!currentLine && currentLine.attrs.startNodeId === nodeGroup.attrs.id){
+            return;
+        }
+
         virtualNode.arrows.forEach(arrowId => {
             const arrow = layer.findOne('#'+arrowId);
             const startNode = layer.findOne('#'+arrow.attrs.startNodeId);
@@ -101,17 +130,30 @@ function drawNode(x, y){
         const menuItems = [];
         menuItems.push(contextMenuItem('Delete node', (w) => deleteNode(e.currentTarget)));
         if(!!currentLine){
-            menuItems.push(contextMenuItem('Connect this node', (w) => connectLineToNode(e.currentTarget)));
+            if(currentLine.attrs.startNodeId !== nodeGroup.attrs.id){
+                menuItems.push(contextMenuItem('Connect this node', (w) => connectLineToNode(e.currentTarget)));
+            }
         } else {
             menuItems.push(contextMenuItem('Create edge', (w) => createEdge(e.currentTarget)));
         }
+
+        menuItems.push(contextMenuItem('Set as start node', w => setStartNode(nodeGroup.attrs.id)));
+        menuItems.push(contextMenuItem('Set as end node', w => setEndNode(nodeGroup.attrs.id)));
 
         drawContextMenu(e.evt.pageX,e.evt.pageY, menuItems);
         e.evt.stopPropagation();
     });
 
+    nodeGroup.on('dblclick', e => {
+        if(!currentLine){
+            createEdge(e.currentTarget);
+        } else {
+            connectLineToNode(e.currentTarget);
+        }
+    });
+
     nodeGroup.add(nodeIdLabel);
-    nodes.push({id: `node${nodeIdCounter}`, konvaId: nodeGroup._id, arrows: []});
+    nodes.push({id: `node${nodeIdCounter}`, konvaId: nodeGroup._id, arrows: [], startNode: false, endNode: false});
     layer.add(nodeGroup);
     layer.draw();
     nodeIdCounter++;
@@ -140,14 +182,23 @@ function createEdge(node){
 
     line.on('contextmenu', e => {        
         e.evt.preventDefault();
+        if(currentLine && currentLine.attrs.id === line.attrs.id){
+            return;
+        }
+
+        e.evt.stopPropagation();
+
         const menuItems = [
             contextMenuItem('Delete edge', () => deleteEdge(e.currentTarget))
         ];
         drawContextMenu(e.evt.pageX,e.evt.pageY, menuItems);
-        e.evt.stopPropagation();
     });
 
     line.on('mouseover', function() {
+        if(currentLine && currentLine.attrs.id === line.attrs.id){
+            return;
+        }
+
         display.style.cursor = 'pointer';
     });
 
@@ -195,6 +246,10 @@ function updateLine(x, y){
 }
 
 function connectLineToNode(node){
+    if(node.attrs.id === currentLine.attrs.startNodeId) {
+        return;
+    }
+
     currentLine.attrs.points = getConnectorPoints({x: currentLine.attrs.points[0], y: currentLine.attrs.points[1]}, {x: node.getX() + node.children[0].getX(), y: node.getY() + node.children[0].getY()});
     layer.draw();
 
@@ -216,4 +271,60 @@ function deleteEdge(edge){
     endNode.arrows.splice(endNode.arrows.findIndex(a => a.id === edgeId), 1);
     edge.destroy();
     layer.draw();
+}
+
+function setStartNode(id){
+    const node = nodes.find(n => n.id === id);
+    if(!node){
+        throw 'Node not found';
+    }
+
+    nodes.forEach(n => {
+        if(n.startNode){
+            n.startNode = false;
+            const nDrawing = layer.findOne('#'+n.id);
+            nDrawing.children[0].attrs.fill = 'white';
+            nDrawing.children[1].attrs.fill = 'black';
+        }
+    });
+
+    node.startNode = true;
+    node.endNode = false;
+    const nodeDrawing = layer.findOne('#'+node.id);
+    nodeDrawing.children[0].attrs.fill = '#388e3c';
+    nodeDrawing.children[1].attrs.fill = 'white';
+    layer.draw();
+}
+
+function setEndNode(id){
+    const node = nodes.find(n => n.id === id);
+    if(!node){
+        throw 'Node not found';
+    }
+    nodes.forEach(n => {
+        if(n.endNode){
+            n.endNode = false;
+            const nDrawing = layer.findOne('#'+n.id);
+            nDrawing.children[0].attrs.fill = 'white';
+            nDrawing.children[1].attrs.fill = 'black';
+        }
+    });
+
+    node.startNode = false;
+    node.endNode = true;
+    const nodeDrawing = layer.findOne('#'+node.id);
+    nodeDrawing.children[0].attrs.fill = '#ff9800';
+    nodeDrawing.children[1].attrs.fill = 'white';
+    layer.draw();
+}
+
+function changeMode(newMode){
+    resetModeButtons();
+    document.querySelector('#'+newMode).classList.add('selected');
+}
+
+function resetModeButtons(){
+    document.querySelector('#BFS').classList.remove('selected');
+    document.querySelector('#DIJKSTRA').classList.remove('selected');
+    document.querySelector('#BELLMAN-FORD').classList.remove('selected');
 }

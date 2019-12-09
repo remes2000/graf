@@ -59,9 +59,10 @@ html {
   color: white;
   background-color: black;
 }
-.container header nav ul .selected {
-  color: white;
-  background-color: black;
+
+.selected {
+  color: white !important;
+  background-color: black !important;
 }
 
 main {
