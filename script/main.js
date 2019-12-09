@@ -166,6 +166,11 @@ function deleteNode(node){
         deleteEdge(layer.findOne('#'+arrow));
     });
 
+    if(!!currentLine && currentLine.attrs.startNodeId === virtualNode.id){
+        currentLine.destroy();
+        currentLine = null;
+    }
+
     node.destroy();
     nodes.splice(nodes.indexOf(virtualNode), 1);
     layer.draw();
@@ -327,4 +332,29 @@ function resetModeButtons(){
     document.querySelector('#BFS').classList.remove('selected');
     document.querySelector('#DIJKSTRA').classList.remove('selected');
     document.querySelector('#BELLMAN-FORD').classList.remove('selected');
+}
+
+document.getElementById('run').addEventListener('click', () => runAlgorithm());
+
+function runAlgorithm(){
+    //TODO add validation
+    const hashMap = generateHashMap();
+    console.log("hashMap", hashMap);
+    runBfs(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
+}
+
+function generateHashMap(){
+    let graph = [];
+    nodes.forEach(n => {
+        graph[n.id] = getNeighbours(n);
+    });
+    return graph;
+}
+
+function getNeighbours(node){
+    const arrows = node.arrows.map(a => {
+        return layer.findOne('#'+a);
+    });
+
+    return arrows.filter(a => a.attrs.startNodeId === node.id).map(a => nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)]);
 }
