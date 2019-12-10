@@ -63,7 +63,7 @@ html {
   color: white;
   background-color: black;
 }
-.container header #run {
+.container header .btn {
   margin: 1rem 0;
   font-size: 1.8rem;
   cursor: pointer;

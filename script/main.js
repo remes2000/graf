@@ -14,7 +14,7 @@ document.querySelector('#BELLMAN-FORD').addEventListener('click', () => changeMo
 const width = display.offsetWidth;
 const height = display.offsetHeight;
 const layer = new Konva.Layer();
-const nodes = [];
+let nodes = [];
 let nodeIdCounter = 0;
 let lineIdCounter = 0;
 let currentLine = null;
@@ -269,11 +269,11 @@ function connectLineToNode(node){
 }
 
 function deleteEdge(edge){
-    const edgeId = edge.attrs.id;
+    const edgeId = edge.attrs.id+"";
     const startNode = nodes.find(n => n.id === edge.attrs.startNodeId);
     const endNode = nodes.find(n => n.id === edge.attrs.endNodeId);
-    startNode.arrows.splice(startNode.arrows.findIndex(a => a.id === edgeId), 1);
-    endNode.arrows.splice(endNode.arrows.findIndex(a => a.id === edgeId), 1);
+    startNode.arrows.splice(startNode.arrows.findIndex(a => a === edgeId), 1);
+    endNode.arrows.splice(endNode.arrows.findIndex(a => a === edgeId), 1);
     edge.destroy();
     layer.draw();
 }
@@ -335,9 +335,12 @@ function resetModeButtons(){
 }
 
 document.getElementById('run').addEventListener('click', () => runAlgorithm());
+document.getElementById('clear-path').addEventListener('click', () => clearPath());
+document.getElementById('clear-all').addEventListener('click', () => clearAll());
 
 function runAlgorithm(){
     //TODO add validation
+    clearPath();
     const hashMap = generateHashMap();
     console.log("hashMap", hashMap);
     runBfs(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
@@ -357,4 +360,44 @@ function getNeighbours(node){
     });
 
     return arrows.filter(a => a.attrs.startNodeId === node.id).map(a => nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)]);
+}
+
+function drawPath(nodes){
+    for(let i=0; i<nodes.length; i++){
+        const node = nodes[i];
+        const realNode = layer.findOne('#'+node.id);
+        realNode.children[0].attrs.stroke = '#0288D1';
+        if(i<nodes.length-1){
+            const nextNode = nodes[i+1];
+            const arrow = node.arrows.find(a => layer.findOne('#'+a).attrs.endNodeId===nextNode.id);
+            layer.findOne('#'+arrow).attrs.stroke = '#0288D1';
+        }
+    }
+    layer.draw();
+}
+
+function clearPath(){
+    nodes.forEach(node => {
+        layer.findOne('#'+node.id).children[0].attrs.stroke = 'black';
+        node.arrows.forEach(arrow => {
+            layer.findOne('#'+arrow).attrs.stroke = 'black';
+        });
+    });
+    layer.draw();
+}
+
+function clearAll(){
+    nodes.forEach(node => {
+        node.arrows.forEach(arrow => {
+            deleteEdge(layer.findOne('#'+arrow));
+        });
+    });
+    const nodeIds = nodes.map(n => n.id);
+    nodeIds.forEach(id => deleteNode(layer.findOne('#'+id)));
+    nodes = [];
+    nodeIdCounter = 0;
+    lineIdCounter = 0;
+    currentLine = null;
+    previousLine = null; 
+    layer.draw();
 }
