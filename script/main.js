@@ -39,6 +39,10 @@ stage.on('mousemove', (e) => {
     }
 });
 
+stage.on('dblclick', e => {
+    drawNode(e.evt.offsetX, e.evt.offsetY);
+})
+
 document.querySelector('html').addEventListener('keydown', event => {
     if(event.keyCode === 27 && !!currentLine){
         currentLine.destroy();
@@ -130,7 +134,7 @@ function drawNode(x, y){
         const menuItems = [];
         menuItems.push(contextMenuItem('Delete node', (w) => deleteNode(e.currentTarget)));
         if(!!currentLine){
-            if(currentLine.attrs.startNodeId !== nodeGroup.attrs.id){
+            if(currentLine.attrs.startNodeId !== nodeGroup.attrs.id && !connectionExists(nodes.find(n => n.id === nodeGroup.attrs.id), nodes.find(n => n.id === currentLine.attrs.startNodeId))){
                 menuItems.push(contextMenuItem('Connect this node', (w) => connectLineToNode(e.currentTarget)));
             }
         } else {
@@ -145,6 +149,12 @@ function drawNode(x, y){
     });
 
     nodeGroup.on('dblclick', e => {
+        e.cancelBubble = true;
+        console.log(e);
+        if(e.evt.which !== 1){
+            return;
+        }
+
         if(!currentLine){
             createEdge(e.currentTarget);
         } else {
@@ -250,19 +260,34 @@ function updateLine(x, y){
     layer.draw();
 }
 
+function connectionExists(startNode, endNode){
+    let result = false;
+    startNode.arrows.forEach(sn => {
+        if(endNode.arrows.includes(sn)){
+            result = true;
+        }
+    });
+    return result;
+}
+
 function connectLineToNode(node){
     if(node.attrs.id === currentLine.attrs.startNodeId) {
+        return;
+    }
+
+    const startNode = nodes.find(n => n.id === currentLine.attrs.startNodeId);
+    const virtualNode = nodes.find(n => n.konvaId === node._id);
+
+    if(connectionExists(startNode, virtualNode)){
         return;
     }
 
     currentLine.attrs.points = getConnectorPoints({x: currentLine.attrs.points[0], y: currentLine.attrs.points[1]}, {x: node.getX() + node.children[0].getX(), y: node.getY() + node.children[0].getY()});
     layer.draw();
 
-    const virtualNode = nodes.find(n => n.konvaId === node._id);
     virtualNode.arrows.push(currentLine.attrs.id);
     currentLine.attrs.endNodeId = virtualNode.id;
 
-    const startNode = nodes.find(n => n.id === currentLine.attrs.startNodeId);
     startNode.arrows.push(currentLine.attrs.id);
 
     currentLine = null;
