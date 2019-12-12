@@ -128,7 +128,12 @@ function drawNode(x, y){
                     {x: e.currentTarget.getX() + e.currentTarget.children[0].getX(), y: e.currentTarget.getY() + e.currentTarget.children[0].getY()},
                 );
             }
-            console.log(Math.atan2(arrow.attrs.points[2],arrow.attrs.points[3]) * (180/Math.PI));
+            const label = layer.findOne(`#label${arrowId}`);
+            const labelPosition = getEdgeWeightLabelPosition(arrow);
+            label.attrs.x = labelPosition.x;
+            label.attrs.y = labelPosition.y;
+            label.attrs.rotation = 0;
+            label.rotate(labelPosition.angle);
         });
         layer.draw();
     });
@@ -274,6 +279,18 @@ function connectionExists(startNode, endNode){
     return result;
 }
 
+function getEdgeWeightLabelPosition(edge){
+    let angle = Math.atan2(edge.attrs.points[3]-edge.attrs.points[1],edge.attrs.points[2]-edge.attrs.points[0])*180/Math.PI;
+    if(!(angle>=-90&&angle<=90)){
+        angle = Math.atan2(edge.attrs.points[1]-edge.attrs.points[3],edge.attrs.points[0]-edge.attrs.points[2])*180/Math.PI;
+    }
+    return {
+        x: (edge.attrs.points[0]+edge.attrs.points[2])/2,
+        y: (edge.attrs.points[1]+edge.attrs.points[3])/2,
+        angle
+    }
+}
+
 function connectLineToNode(node){
     if(node.attrs.id === currentLine.attrs.startNodeId) {
         return;
@@ -287,19 +304,31 @@ function connectLineToNode(node){
     }
 
     currentLine.attrs.points = getConnectorPoints({x: currentLine.attrs.points[0], y: currentLine.attrs.points[1]}, {x: node.getX() + node.children[0].getX(), y: node.getY() + node.children[0].getY()});
+    
     //Draw edge weight
-    const edgeWeight = new Konva.Text({
-        x:(currentLine.attrs.points[0] + currentLine.attrs.points[2])/2,
-        y:(currentLine.attrs.points[1] + currentLine.attrs.points[3])/2,
-        text: 1,
-        fontSize: 30,
-        fontFamily: 'Calibri',
-    });
-    edgeWeight.offsetX(edgeWeight.width() / 2);
-    edgeWeight.offsetY(edgeWeight.height());
-    //console.log(Math.atan2(currentLine.attrs.points[2],currentLine.attrs.points[3]) * (180/Math.PI));
-    layer.add(edgeWeight);
+    const edgeWeightLabel = new Konva.Label({
+        x: getEdgeWeightLabelPosition(currentLine).x,
+        y: getEdgeWeightLabelPosition(currentLine).y,
+        fill: 'green',
+        stroke: 'black',
+        strokeWidth: 1,
+        id: `label${currentLine.attrs.id}`
+      });
 
+      edgeWeightLabel.add(
+          new Konva.Text({
+            text: '1',
+            fontFamily: 'Calibri',
+            fontSize: 18,
+            padding: 5,
+            fill: 'black'
+          })
+      );
+    edgeWeightLabel.offsetX(edgeWeightLabel.width() / 2);
+    edgeWeightLabel.offsetY(edgeWeightLabel.height());
+    edgeWeightLabel.rotate(getEdgeWeightLabelPosition(currentLine).angle);
+
+    layer.add(edgeWeightLabel);
     layer.draw();
 
     virtualNode.arrows.push(currentLine.attrs.id);
@@ -314,6 +343,8 @@ function deleteEdge(edge){
     const edgeId = edge.attrs.id+"";
     const startNode = nodes.find(n => n.id === edge.attrs.startNodeId);
     const endNode = nodes.find(n => n.id === edge.attrs.endNodeId);
+    const label = layer.findOne(`#label${edgeId}`);
+    label.destroy();
     startNode.arrows.splice(startNode.arrows.findIndex(a => a === edgeId), 1);
     endNode.arrows.splice(endNode.arrows.findIndex(a => a === edgeId), 1);
     edge.destroy();
