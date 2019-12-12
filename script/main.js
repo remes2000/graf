@@ -40,6 +40,9 @@ stage.on('mousemove', (e) => {
 });
 
 stage.on('dblclick', e => {
+    if(e.evt.which !== 1){
+        return;
+    }
     drawNode(e.evt.offsetX, e.evt.offsetY);
 })
 
@@ -125,6 +128,7 @@ function drawNode(x, y){
                     {x: e.currentTarget.getX() + e.currentTarget.children[0].getX(), y: e.currentTarget.getY() + e.currentTarget.children[0].getY()},
                 );
             }
+            console.log(Math.atan2(arrow.attrs.points[2],arrow.attrs.points[3]) * (180/Math.PI));
         });
         layer.draw();
     });
@@ -150,7 +154,6 @@ function drawNode(x, y){
 
     nodeGroup.on('dblclick', e => {
         e.cancelBubble = true;
-        console.log(e);
         if(e.evt.which !== 1){
             return;
         }
@@ -204,7 +207,8 @@ function createEdge(node){
         e.evt.stopPropagation();
 
         const menuItems = [
-            contextMenuItem('Delete edge', () => deleteEdge(e.currentTarget))
+            contextMenuItem('Delete edge', () => deleteEdge(e.currentTarget)),
+            contextMenuTextfield('Edge weight', () => deleteEdge(e.currentTarget)),
         ];
         drawContextMenu(e.evt.pageX,e.evt.pageY, menuItems);
     });
@@ -283,6 +287,19 @@ function connectLineToNode(node){
     }
 
     currentLine.attrs.points = getConnectorPoints({x: currentLine.attrs.points[0], y: currentLine.attrs.points[1]}, {x: node.getX() + node.children[0].getX(), y: node.getY() + node.children[0].getY()});
+    //Draw edge weight
+    const edgeWeight = new Konva.Text({
+        x:(currentLine.attrs.points[0] + currentLine.attrs.points[2])/2,
+        y:(currentLine.attrs.points[1] + currentLine.attrs.points[3])/2,
+        text: 1,
+        fontSize: 30,
+        fontFamily: 'Calibri',
+    });
+    edgeWeight.offsetX(edgeWeight.width() / 2);
+    edgeWeight.offsetY(edgeWeight.height());
+    //console.log(Math.atan2(currentLine.attrs.points[2],currentLine.attrs.points[3]) * (180/Math.PI));
+    layer.add(edgeWeight);
+
     layer.draw();
 
     virtualNode.arrows.push(currentLine.attrs.id);
@@ -290,7 +307,7 @@ function connectLineToNode(node){
 
     startNode.arrows.push(currentLine.attrs.id);
 
-    currentLine = null;
+        currentLine = null;
 }
 
 function deleteEdge(edge){

@@ -5,6 +5,14 @@ function contextMenuItem(content, callback){
     }
 }
 
+function contextMenuTextfield(label, onChange){
+    return {
+        content: label,
+        onChange,
+        textfield: true
+    }
+}
+
 function generateContextMenuItem(item){
     const listItem = document.createElement('li');
     listItem.addEventListener('click', () => {
@@ -12,6 +20,26 @@ function generateContextMenuItem(item){
         item.onClick();
     });
     listItem.innerHTML = item.content;
+    return listItem;
+}
+
+function generateContextMenuTextfield(item){
+    const listItem = document.createElement('li');
+    const inputGroup = document.createElement('div');
+    inputGroup.setAttribute('class', 'input-group');
+
+    const input = document.createElement('input');
+    input.setAttribute('type', 'number');
+    input.setAttribute('id', item.inputId);
+    const label = document.createElement('label');
+    label.setAttribute('for', item.inputId);
+    label.innerHTML = item.content;
+
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(label);
+    listItem.addEventListener('click', e => e.stopPropagation());
+
+    listItem.appendChild(inputGroup);
     return listItem;
 }
 
@@ -43,7 +71,12 @@ function drawContextMenu(left, top, items){
     container.style.top = `${top}px`;
     const ul = document.createElement('ul');
     items.forEach(item => {
-        ul.appendChild(generateContextMenuItem(item));
+        if(item.textfield){
+            ul.appendChild(generateContextMenuTextfield(item));
+        }
+        else {
+            ul.appendChild(generateContextMenuItem(item));
+        }
     });
     container.appendChild(ul);
     document.querySelector('body').appendChild(container);

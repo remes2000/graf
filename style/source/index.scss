@@ -25,6 +25,11 @@ html{
             font-weight: bold;
             cursor: pointer;
 
+            .input-group{
+                display: flex;
+                flex-direction: column;
+            }
+
             &:hover{
                 background-color: #f0f0f0;
             }
