@@ -6,6 +6,14 @@ display.addEventListener('contextmenu', e => {
     drawContextMenu(e.pageX,e.pageY,[contextMenuItem('Create new node', (w) => drawNode(e.offsetX, e.offsetY))]);
 });
 
+document.getElementById('show-weights').addEventListener('click', e => {
+    if(e.srcElement.checked){
+        showAllWeights();
+    } else {
+        hideAllWeights();
+    }
+});
+
 document.querySelector('#BFS').addEventListener('click', () => changeMode("BFS"));
 document.querySelector('#DIJKSTRA').addEventListener('click', () => changeMode("DIJKSTRA"));
 document.querySelector('#BELLMAN-FORD').addEventListener('click', () => changeMode("BELLMAN-FORD"));
@@ -213,7 +221,7 @@ function createEdge(node){
 
         const menuItems = [
             contextMenuItem('Delete edge', () => deleteEdge(e.currentTarget)),
-            contextMenuTextfield('Edge weight', () => deleteEdge(e.currentTarget)),
+            contextMenuTextfield('Edge weight', e => setEdgeWeight(line.attrs.id,e.srcElement.value), layer.findOne(`#label${line.attrs.id}`).children[0].getAttr('text')),
         ];
         drawContextMenu(e.evt.pageX,e.evt.pageY, menuItems);
     });
@@ -237,6 +245,14 @@ function createEdge(node){
     line.moveToBottom();
     layer.draw();
     lineIdCounter++;
+}
+
+function setEdgeWeight(lineId, data){
+    const label = layer.findOne(`#label${lineId}`);
+    label.children[0].setAttr('text', data);
+    label.offsetX(label.width() / 2);
+    label.offsetY(label.height());
+    layer.draw();
 }
 
 function getConnectorPoints(from, to) {
@@ -324,9 +340,14 @@ function connectLineToNode(node){
             fill: 'black'
           })
       );
+
     edgeWeightLabel.offsetX(edgeWeightLabel.width() / 2);
     edgeWeightLabel.offsetY(edgeWeightLabel.height());
     edgeWeightLabel.rotate(getEdgeWeightLabelPosition(currentLine).angle);
+
+    if(!document.getElementById('show-weights').checked){
+        edgeWeightLabel.hide();
+    }
 
     layer.add(edgeWeightLabel);
     layer.draw();
@@ -432,7 +453,8 @@ function getNeighbours(node){
         return layer.findOne('#'+a);
     });
 
-    return arrows.filter(a => a.attrs.startNodeId === node.id).map(a => nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)]);
+    return arrows.filter(a => a.attrs.startNodeId === node.id)
+                    .map(a => nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)]);
 }
 
 function drawPath(nodes){
@@ -472,5 +494,29 @@ function clearAll(){
     lineIdCounter = 0;
     currentLine = null;
     previousLine = null; 
+    layer.draw();
+}
+
+function showAllWeights(){
+
+}
+
+function hideAllWeights(){
+    nodes.forEach(node => {
+        node.arrows.forEach(arrow => {
+            const label = layer.findOne(`#label${arrow}`);
+            label.hide();
+        });
+    });
+    layer.draw();
+}
+
+function showAllWeights(){
+    nodes.forEach(node => {
+        node.arrows.forEach(arrow => {
+            const label = layer.findOne(`#label${arrow}`);
+            label.show();
+        });
+    });
     layer.draw();
 }

@@ -77,6 +77,13 @@ html{
            } 
         }
 
+        .checkbox{
+            display: flex;
+            align-items: center;
+            font-size: 1.7rem;
+            padding: 1rem 0;
+        }
+
         .btn{
             margin: 1rem 0;
             font-size: 1.8rem;

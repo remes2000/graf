@@ -5,10 +5,11 @@ function contextMenuItem(content, callback){
     }
 }
 
-function contextMenuTextfield(label, onChange){
+function contextMenuTextfield(label, onChange, defaultValue){
     return {
         content: label,
         onChange,
+        defaultValue,
         textfield: true
     }
 }
@@ -29,8 +30,11 @@ function generateContextMenuTextfield(item){
     inputGroup.setAttribute('class', 'input-group');
 
     const input = document.createElement('input');
+    input.addEventListener('input', e => item.onChange(e))
     input.setAttribute('type', 'number');
     input.setAttribute('id', item.inputId);
+    console.log(item.defaultValue)
+    input.setAttribute('value', item.defaultValue);
     const label = document.createElement('label');
     label.setAttribute('for', item.inputId);
     label.innerHTML = item.content;
