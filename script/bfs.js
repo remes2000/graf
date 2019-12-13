@@ -1,5 +1,5 @@
 function runBfs(graph, startNode, endNode){
-    let nodes = graph[startNode.id].map(n => Object.assign({parent: startNode}, n));
+    let nodes = graph.get(startNode.id).map(n => Object.assign({parent: startNode}, n));
     let searched = [];
     while(nodes.length > 0){
         const node = nodes.shift();
@@ -9,24 +9,22 @@ function runBfs(graph, startNode, endNode){
         }
 
         if(node.endNode){
-            return drawPath(backTraceRoute(node));
+            return drawPath(backTraceRouteBFS(node));
         }
         else { 
-            nodes = nodes.concat(graph[node.id].map(n => Object.assign({parent: node}, n)));
+            nodes = nodes.concat(graph.get(node.id).map(n => Object.assign({parent: node}, n)));
             searched.push(node);
         }
     }
     return console.log("NO SUCH A PATH");
 }
 
-
-
-function backTraceRoute(endNode){
+function backTraceRouteBFS(endNode){
     const steps = [];
     let parent = endNode; 
     while(parent){
         steps.push(parent);
         parent = parent.parent;
     }
-    return steps.reverse();
+    return steps.reverse().map(n => n.id);
 }

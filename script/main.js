@@ -418,6 +418,7 @@ function setEndNode(id){
 }
 
 function changeMode(newMode){
+    mode = newMode;
     resetModeButtons();
     document.querySelector('#'+newMode).classList.add('selected');
 }
@@ -437,13 +438,21 @@ function runAlgorithm(){
     clearPath();
     const hashMap = generateHashMap();
     console.log("hashMap", hashMap);
-    runBfs(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
+    console.log(mode);
+    switch(mode){
+        case 'BFS':
+            runBfs(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
+        break;
+        case 'DIJKSTRA':
+            runDijkstra(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
+        break;
+    }
 }
 
 function generateHashMap(){
-    let graph = [];
+    let graph = new Map();
     nodes.forEach(n => {
-        graph[n.id] = getNeighbours(n);
+        graph.set(n.id, getNeighbours(n));
     });
     return graph;
 }
@@ -454,16 +463,22 @@ function getNeighbours(node){
     });
 
     return arrows.filter(a => a.attrs.startNodeId === node.id)
-                    .map(a => nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)]);
+                    .map(a => {
+                        const node = nodes[nodes.findIndex(n => n.id === a.attrs.endNodeId)];
+                        const distance = layer.findOne(`#label${a.attrs.id}`).children[0].attrs.text;
+                        node.distance = distance*1;
+                        return Object.assign({}, node);
+                    });
 }
 
-function drawPath(nodes){
-    for(let i=0; i<nodes.length; i++){
-        const node = nodes[i];
+function drawPath(steps){
+    const pathNodes = steps.map(s => nodes.find(n => n.id === s));
+    for(let i=0; i<pathNodes.length; i++){
+        const node = pathNodes[i];
         const realNode = layer.findOne('#'+node.id);
         realNode.children[0].attrs.stroke = '#0288D1';
-        if(i<nodes.length-1){
-            const nextNode = nodes[i+1];
+        if(i<pathNodes.length-1){
+            const nextNode = pathNodes[i+1];
             const arrow = node.arrows.find(a => layer.findOne('#'+a).attrs.endNodeId===nextNode.id);
             layer.findOne('#'+arrow).attrs.stroke = '#0288D1';
         }
