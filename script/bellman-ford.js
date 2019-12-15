@@ -1,8 +1,12 @@
 function runBellmanFord(graph, startNode, endNode){
     const costs = generateCostsBellmanFord(graph, startNode);
     const parents = generateParentsBellmanFord(graph, startNode);
+    let counter = 1;
     for(let k of graph.keys()){
         for(let key of graph.keys()){
+            setTimeout(() => animateNode(key), 150 * counter);
+            counter++;
+
             if(costs.get(key) === Number.POSITIVE_INFINITY) { continue; }
             graph.get(key).forEach(n => {
                 const newCost = costs.get(key) + n.distance;
@@ -13,9 +17,7 @@ function runBellmanFord(graph, startNode, endNode){
             });
         }
     }
-
-    //console.log(backTraceRouteBellmanFord(parents, startNode.id, endNode.id));
-    drawPath(backTraceRouteBellmanFord(parents, startNode.id, endNode.id));
+    setTimeout(() => drawPath(backTraceRouteBellmanFord(parents, startNode.id, endNode.id)), 150 * counter+1);
 }
 
 function generateCostsBellmanFord(graph, startNode){

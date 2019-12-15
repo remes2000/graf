@@ -2,9 +2,13 @@ function runDijkstra(graph, startNode, endNode){
     const costs = generateCosts(graph, startNode);
     const parents = generateParents(graph, startNode);
     const processed = [];
-
+    let counter = 1;
     let node = getNodeWithLowestPrice(costs, processed, graph);
     while(node){
+        const nodeId = node+"";
+        setTimeout(() => animateNode(nodeId), 150 * counter);
+        counter++;
+
         const cost = costs.get(node);
         const neighbors = graph.get(node);
         neighbors.forEach(neighbor => {
@@ -18,7 +22,7 @@ function runDijkstra(graph, startNode, endNode){
         node = getNodeWithLowestPrice(costs, processed, graph);
     }
 
-    drawPath(backTraceRouteDijkstra(parents, startNode.id, endNode.id));
+    setTimeout(() => drawPath(backTraceRouteDijkstra(parents, startNode.id, endNode.id)), 150 * counter+1)
 }
 
 function getNodeWithLowestPrice(costs,processed, graph){

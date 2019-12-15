@@ -437,8 +437,6 @@ function runAlgorithm(){
     //TODO add validation
     clearPath();
     const hashMap = generateHashMap();
-    console.log("hashMap", hashMap);
-    console.log(mode);
     switch(mode){
         case 'BFS':
             runBfs(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
@@ -487,6 +485,17 @@ function drawPath(steps){
         }
     }
     layer.draw();
+}
+
+function animateNode(nodeId){
+    const node = layer.findOne('#'+nodeId); 
+    const fill = node.children[0].getAttr('fill');
+    node.children[0].setAttr('fill', 'green');
+    layer.draw();
+    setTimeout(() => {
+        node.children[0].setAttr('fill', fill);
+        layer.draw();
+    }, 100);
 }
 
 function clearPath(){
