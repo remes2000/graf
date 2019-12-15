@@ -446,6 +446,9 @@ function runAlgorithm(){
         case 'DIJKSTRA':
             runDijkstra(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
         break;
+        case 'BELLMAN-FORD':
+            runBellmanFord(hashMap, nodes.find(n => n.startNode), nodes.find(n => n.endNode));
+        break;
     }
 }
 
