@@ -429,9 +429,19 @@ function resetModeButtons(){
     document.querySelector('#BELLMAN-FORD').classList.remove('selected');
 }
 
-document.getElementById('run').addEventListener('click', () => runAlgorithm());
-document.getElementById('clear-path').addEventListener('click', () => clearPath());
-document.getElementById('clear-all').addEventListener('click', () => clearAll());
+document.getElementById('run').addEventListener('click', () => {
+    blockButtons();
+    hideMessage();
+    runAlgorithm();
+});
+document.getElementById('clear-path').addEventListener('click', () => {
+    hideMessage();
+    clearPath();
+});
+document.getElementById('clear-all').addEventListener('click', () => {
+    hideMessage();
+    clearAll();
+});
 
 function runAlgorithm(){
     //TODO add validation
@@ -490,7 +500,7 @@ function drawPath(steps){
 function animateNode(nodeId){
     const node = layer.findOne('#'+nodeId); 
     const fill = node.children[0].getAttr('fill');
-    node.children[0].setAttr('fill', 'green');
+    node.children[0].setAttr('fill', '#0288D1');
     layer.draw();
     setTimeout(() => {
         node.children[0].setAttr('fill', fill);
@@ -546,4 +556,58 @@ function showAllWeights(){
         });
     });
     layer.draw();
+}
+
+function showMessage(type, content){
+    const display = document.getElementById('message');
+    display.innerHTML = content;
+    if(type==="ERROR"){
+        display.classList.add("error");
+    }
+    if(type==="SUCCESS"){
+        display.classList.add("success");
+    }
+}
+
+function hideMessage(){
+    const display = document.getElementById('message');
+    display.innerHTML = "";
+    display.classList.remove("error");
+    display.classList.remove("success");
+}
+
+function blockButtons(){
+    disableRunButton(true);
+    disableClearPathButton(true);
+    disableClearAllButton(true);
+}
+
+function unclockButtons(){
+    disableRunButton(false);
+    disableClearPathButton(false);
+    disableClearAllButton(false);
+}
+
+function disableRunButton(disable){
+    if(disable){
+        document.getElementById('run').setAttribute('disabled', disable);
+    } else {
+        document.getElementById('run').removeAttribute('disabled');
+    }
+}
+
+function disableClearPathButton(disable){
+    if(disable){
+        document.getElementById('clear-path').setAttribute('disabled', disable);
+    } else {
+        document.getElementById('clear-path').removeAttribute('disabled');
+    }
+}
+
+function disableClearAllButton(disable){
+    if(disable){
+        document.getElementById('clear-all').setAttribute('disabled', disable)
+    } else {
+        document.getElementById('clear-all').removeAttribute('disabled');
+    }
 }

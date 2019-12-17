@@ -17,7 +17,15 @@ function runBellmanFord(graph, startNode, endNode){
             });
         }
     }
-    setTimeout(() => drawPath(backTraceRouteBellmanFord(parents, startNode.id, endNode.id)), 150 * counter+1);
+    setTimeout(() => {
+        const route = backTraceRouteBellmanFord(parents, startNode.id, endNode.id);
+        unclockButtons();
+        if(route[0] !== startNode.id || route[route.length - 1] !== endNode.id){
+            showMessage("ERROR", "Path not found");
+        } else {
+            drawPath(route);
+        }
+    }, 150 * counter+1);
 }
 
 function generateCostsBellmanFord(graph, startNode){

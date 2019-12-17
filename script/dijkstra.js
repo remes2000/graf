@@ -22,7 +22,15 @@ function runDijkstra(graph, startNode, endNode){
         node = getNodeWithLowestPrice(costs, processed, graph);
     }
 
-    setTimeout(() => drawPath(backTraceRouteDijkstra(parents, startNode.id, endNode.id)), 150 * counter+1)
+    setTimeout(() => {
+        const route = backTraceRouteDijkstra(parents, startNode.id, endNode.id);
+        unclockButtons();
+        if(route[0] !== startNode.id || route[route.length - 1] !== endNode.id){
+            showMessage("ERROR", "Path not found");
+        } else {
+            drawPath(route);
+        }
+    }, 150 * counter+1)
 }
 
 function getNodeWithLowestPrice(costs,processed, graph){

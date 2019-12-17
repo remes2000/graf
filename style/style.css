@@ -39,6 +39,16 @@ html {
   width: 110rem;
   margin: 0 auto;
 }
+.container header #message {
+  font-size: 2rem;
+  padding: 1rem 0;
+}
+.container header #message.error {
+  color: red;
+}
+.container header #message.success {
+  color: green;
+}
 .container header h1 {
   font-size: 10rem;
   font-weight: normal;

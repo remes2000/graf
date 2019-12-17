@@ -12,6 +12,7 @@ function runBfs(graph, startNode, endNode){
         counter++;
 
         if(node.endNode){
+            unclockButtons();
             return setTimeout(() => drawPath(backTraceRouteBFS(node)), 150 * counter+1);
 
         }
@@ -20,7 +21,9 @@ function runBfs(graph, startNode, endNode){
             searched.push(node);
         }
     }
-    return console.log("NO SUCH A PATH");
+    
+
+    setTimeout(() => {showMessage("ERROR", "Path not found"); unclockButtons();}, 150 * counter+1);
 }
 
 function backTraceRouteBFS(endNode){

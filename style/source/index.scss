@@ -42,6 +42,17 @@ html{
     margin: 0 auto;
 
     header{
+        #message{
+            font-size: 2rem;
+            padding: 1rem 0;
+            &.error{
+                color: red;
+            }
+            &.success{
+                color: green;
+            }
+        }
+
         h1{
             font-size: 10rem;
             font-weight: normal;
