@@ -3,18 +3,22 @@ function runBellmanFord(graph, startNode, endNode){
     const parents = generateParentsBellmanFord(graph, startNode);
     let counter = 1;
     for(let k of graph.keys()){
+        let change = false;
         for(let key of graph.keys()){
             setTimeout(() => animateNode(key), 150 * counter);
             counter++;
-
             if(costs.get(key) === Number.POSITIVE_INFINITY) { continue; }
             graph.get(key).forEach(n => {
                 const newCost = costs.get(key) + n.distance;
                 if(newCost<costs.get(n.id)){
                     costs.set(n.id, newCost);
                     parents.set(n.id, key);
+                    change=true;
                 }
             });
+        }
+        if(!change){
+            break;
         }
     }
     setTimeout(() => {
@@ -65,7 +69,7 @@ function backTraceRouteBellmanFord(parents, startNodeId, endNodeId){
     let parent = parents.get(endNodeId);
     while(parent){
         if(steps.includes(parent)){
-            throw 'CYCLE FOUND';
+            return showMessage("ERROR", "Cycle found, cannot find path");
         }
         steps.push(parent);
         parent = parents.get(parent);

@@ -63,6 +63,7 @@ document.querySelector('html').addEventListener('keydown', event => {
 });
 
 function drawNode(x, y){
+    console.log(x,y);
     const nodeGroup = new Konva.Group({
         id: `node${nodeIdCounter}`,
         draggable: true,
@@ -183,6 +184,7 @@ function drawNode(x, y){
     layer.add(nodeGroup);
     layer.draw();
     nodeIdCounter++;
+    return nodeGroup;
 }
 
 function deleteNode(node){
@@ -357,7 +359,9 @@ function connectLineToNode(node){
 
     startNode.arrows.push(currentLine.attrs.id);
 
-        currentLine = null;
+    let currentLineId = currentLine.getAttr('id')+"";
+    currentLine = null;
+    return currentLineId;
 }
 
 function deleteEdge(edge){
@@ -442,9 +446,161 @@ document.getElementById('clear-all').addEventListener('click', () => {
     hideMessage();
     clearAll();
 });
+document.getElementById('load-example').addEventListener('click', () => {
+    if(mode === "BFS"){
+        clearAll();
+        const node0 = drawNode(480, 50);
+        const node1 = drawNode(480, 200);
+        const node2 = drawNode(480, 350);
+        const node3 = drawNode(240, 350);
+        const node4 = drawNode(730, 350);
+        const node5 = drawNode(730, 200);
+
+        createEdge(node1);
+        connectLineToNode(node0);
+
+        createEdge(node2);
+        connectLineToNode(node1);
+
+        createEdge(node3);
+        connectLineToNode(node1);
+
+        createEdge(node3);
+        connectLineToNode(node2);
+
+        createEdge(node2);
+        connectLineToNode(node4);
+
+        createEdge(node1);
+        connectLineToNode(node5);
+
+        createEdge(node4);
+        connectLineToNode(node5);
+
+        createEdge(node0);
+        connectLineToNode(node5);
+
+        setStartNode(node3.getAttr('id'));
+        setEndNode(node5.getAttr('id'));
+    } else if(mode === 'DIJKSTRA'){
+        clearAll();
+        const node0 = drawNode(220+50, 220);
+        const node1 = drawNode(370+50, 70);
+        const node2 = drawNode(370+50, 370);
+        const node3 = drawNode(570+50, 70);
+        const node4 = drawNode(570+50, 370);
+        const node5 = drawNode(720+50, 220);
+
+        createEdge(node0);
+        const edge0 = connectLineToNode(node1);
+        setEdgeWeight(edge0, "5");
+
+        createEdge(node0);
+        const edge1 = connectLineToNode(node2);
+        setEdgeWeight(edge1, "0");
+
+        createEdge(node1);
+        const edge3 = connectLineToNode(node3);
+        setEdgeWeight(edge3, "15");
+
+        createEdge(node2);
+        const edge4 = connectLineToNode(node4);
+        setEdgeWeight(edge4, "35");
+
+        createEdge(node2);
+        const edge5 = connectLineToNode(node3);
+        setEdgeWeight(edge5, "30");
+
+        createEdge(node1);
+        const edge6 = connectLineToNode(node4);
+        setEdgeWeight(edge6, "20");
+
+        createEdge(node3);
+        const edge7 = connectLineToNode(node5);
+        setEdgeWeight(edge7, "20");
+
+        createEdge(node4);
+        const edge8 = connectLineToNode(node5);
+        setEdgeWeight(edge8, "10");
+
+        setStartNode(node0.getAttr('id'));
+        setEndNode(node5.getAttr('id'));
+    } else if(mode==="BELLMAN-FORD"){
+        clearAll();
+        const node0 = drawNode(500,40);
+        const node1 = drawNode(300,140);
+        const node2 = drawNode(700,150);
+        const node3 = drawNode(300,300);
+        const node4 = drawNode(700,300);
+        const node5 = drawNode(500,400);
+
+        createEdge(node0);
+        const edge0 = connectLineToNode(node1);
+        setEdgeWeight(edge0, "8");
+
+        createEdge(node0);
+        const edge1 = connectLineToNode(node2);
+        setEdgeWeight(edge1, "10");
+
+        createEdge(node1);
+        const edge2 = connectLineToNode(node3);
+        setEdgeWeight(edge2, "1");
+
+        createEdge(node4);
+        const edge3 = connectLineToNode(node2);
+        setEdgeWeight(edge3, "1");
+
+        createEdge(node3);
+        const edge4 = connectLineToNode(node5);
+        setEdgeWeight(edge4, "-1");
+
+        createEdge(node5);
+        const edge5 = connectLineToNode(node4);
+        setEdgeWeight(edge5, "-2");
+
+        createEdge(node3);
+        const edge6 = connectLineToNode(node2);
+        setEdgeWeight(edge6, "-4");
+
+        createEdge(node2);
+        const edge7 = connectLineToNode(node5);
+        setEdgeWeight(edge7, "2");
+
+        setStartNode(node0.getAttr('id'));
+        setEndNode(node5.getAttr('id'));
+    }
+});
 
 function runAlgorithm(){
-    //TODO add validation
+
+    //validation
+    if(nodes.find(n => n.startNode) === undefined || nodes.find(n => n.endNode) === undefined){
+        unclockButtons();
+        return showMessage('ERROR', "To run an algorithm you have to specify start and end node");
+    }
+
+    let edgesCorrect = true;
+    let arrows=[];
+    nodes.forEach(n => {
+       arrows = arrows.concat(n.arrows); 
+    });
+    arrows.forEach(a => {
+        const label = layer.findOne('#label'+a);
+        const weight = label.children[0].getAttr('text');
+        if(isNaN(parseInt(weight))){
+            edgesCorrect = false;
+            return;
+        }
+    });
+    //if its bfs, fuck the weights
+    if(mode === "BFS"){
+        edgesCorrect = true;
+    }
+    if(!edgesCorrect){
+        unclockButtons();
+        return showMessage('ERROR', "To run an algorithm all edge weights have to be correctly specified");
+    }
+
     clearPath();
     const hashMap = generateHashMap();
     switch(mode){
